@@ -1,9 +1,13 @@
 #include <Arduino.h>
+#include <SSD1306.h>
+
+SSD1306             display(0x3c, 4, 5, GEOMETRY_128_32);
 const int           pulseA = 12;
 const int           pulseB = 13;
 const int           pushSW = 2;
 volatile int        lastEncoded = 0;
 volatile long       encoderValue = 0;
+char data[10];
 
 IRAM_ATTR void handleRotary() {
     // Never put any long instruction
@@ -34,9 +38,25 @@ void setup() {
     attachInterrupt(pushSW, buttonClicked, FALLING);
     attachInterrupt(pulseA, handleRotary, CHANGE);
     attachInterrupt(pulseB, handleRotary, CHANGE);
+
+    display.init();
+    display.flipScreenVertically();
+    display.setFont(ArialMT_Plain_16);
+    
+    display.display();
+    display.clear();
 }
 
 void loop() {
     delay(500);
+    // sprintf(data, "%.1f", encoderValue);
+    ultoa(encoderValue, data, 10);
+
+    display.drawString(10, 10, data);
+    
+    display.display();
+    display.clear();
+    
+    delay(1000);
     Serial.println(encoderValue);
 }
